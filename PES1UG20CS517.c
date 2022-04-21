@@ -9,14 +9,26 @@
 
 int q[20], visited[20], f = -1, r = -1;
 
-static int length(char *str){
+static int length(const char *str)
+{
     int len = 0;
-    while(*str){
+    while (*str)
+    {
         len++;
         str++;
     }
 
     return len;
+}
+
+void mystrcpy(char str2[30], char str1[30])
+{
+    int i;
+    for (i = 0; str1[i] != '\0'; i++)
+    {
+        str2[i] = str1[i];
+    }
+    str2[i] = '\0';
 }
 
 static void bfs(int v, int n, const connection_t a[n][n])
@@ -262,41 +274,39 @@ static void printArray(int n, airport_t airport_list[n])
     printf("\n");
 }
 
-
 void q4(int n, int (*predicate_func)(const airport_t *, const airport_t *),
         airport_t airport_list[n])
 {
 
     // perform quicksort on data
-    quickSort( n, airport_list, 0, n-1, predicate_func);
-    
+    quickSort(n, airport_list, 0, n - 1, predicate_func);
 }
 
 // For Question 5
-void commonPrefixUtil(char *str1, char *str2, int id1, int id2, int *prev_len, pair_t *res)
+void commonPrefixUtil(int n, const airport_t airports[n], int id1, int id2, int *prev_len, pair_t *res, pair_t index)
 {
-	char *result = (char*)malloc(sizeof(char)*50);
-    int  k = 0;
-	int n1 = length(str1), n2 = length(str2);
-	//printf("n1 %d, n2 %d\n", n1, n2);
+    char *result = (char *)malloc(sizeof(char) * 50);
+    int k = 0;
+    int n1 = length(airports[index.first].airport_name), n2 = length(airports[index.second].airport_name);
+    // printf("n1 %d, n2 %d\n", n1, n2);
 
-	// Compare str1 and str2
-	for (int i=0, j=0; i<=n1-1&&j<=n2-1; i++,j++)
-	{
-		//printf("str1: %c\t str2: %c\n", str1[i], str2[j]);
-		if (str1[i] != str2[j])
-			break;
-		// printf("%s\n", result);
-		result[k++] = str1[i];
-	}
+    // Compare str1 and str2
+    for (int i = 0, j = 0; i <= n1 - 1 && j <= n2 - 1; i++, j++)
+    {
+        // printf("str1: %c\t str2: %c\n", str1[i], str2[j]);
+        if (airports[id1].airport_name[i] != airports[id2].airport_name[j])
+            break;
+        // printf("%s\n", result);
+        result[k++] = airports[id1].airport_name[i];
+    }
     result[k] = '\0';
-	if(strlen(result) > *prev_len){
-		*prev_len = strlen(result);
-		res->first = id1;
-		res->second = id2;
-
-	}
-	// printf("%s %d and %s %d is %s %d\n", str1, id1, str2, id2, result, strlen(result));
+    if (length(result) > *prev_len)
+    {
+        *prev_len = length(result);
+        res->first = id1;
+        res->second = id2;
+    }
+    // printf("%s %d and %s %d is %s %d\n", str1, id1, str2, id2, result, strlen(result));
 }
 
 // A Function that returns the longest common prefix
@@ -307,54 +317,57 @@ void commonPrefixUtil(char *str1, char *str2, int id1, int id2, int *prev_len, p
 pair_t q5(int n, airport_t airports[n])
 {
     pair_t result;
+    pair_t index;
     int prev = 0;
-	result.first = -1;
-	result.second = -1;
-    char *str1 = (char*)malloc(sizeof(char)*50);
-    char *str2 = (char*)malloc(sizeof(char)*50);
-    for(int i = 0; i< n; i++)
-		for (int j = i+1; j < n; j++)
-		{
-			strcpy(str1, airports[i].airport_name);
-			strcpy(str2, airports[j].airport_name);
-            commonPrefixUtil(str1, str2, airports[i].num_id, airports[j].num_id, &prev, &result);
-		}
-	// printf("longest prefix is at postions {%d, %d}\n", result.first, result.second);
+    result.first = -1;
+    result.second = -1;
+    char *str1 = (char *)malloc(sizeof(char) * 50);
+    char *str2 = (char *)malloc(sizeof(char) * 50);
+    for (int i = 0; i < n; i++)
+        for (int j = i + 1; j < n; j++)
+        {
+            // strcpy(str1, airports[i].airport_name);
+            // strcpy(str2, airports[j].airport_name);
+            index.first = i;
+            index.second = j;
+            commonPrefixUtil(n, airports, airports[i].num_id, airports[j].num_id, &prev, &result, index);
+        }
+    // printf("longest prefix is at postions {%d, %d}\n", result.first, result.second);
     return result;
 }
-
 
 // For question 6
 static int binarySearch(int arr[], int l, int r, int x, int n)
 {
-	if (r >= l) {
-		int mid = l + (r - l) / 2;
+    if (r >= l)
+    {
+        int mid = l + (r - l) / 2;
 
-		// If the element is present at the middle
-		// itself
-        
+        // If the element is present at the middle
+        // itself
+
         // printf("mid-1\tx\tmid\n");
         // printf("%d\t%d\t%d\n", arr[mid-1], x, arr[mid]);
-		if (arr[mid] == x)
-			return mid+1;
-        else if ((arr[mid-1] < x) && (x < arr[mid]))
+        if (arr[mid] == x)
+            return mid + 1;
+        else if ((arr[mid - 1] < x) && (x < arr[mid]))
             return mid;
-        else if(mid == n-1)
-            return mid+1;
+        else if (mid == n - 1)
+            return mid + 1;
 
-		// If element is smaller than mid, then
-		// it can only be present in left subarray
-		if (arr[mid] > x)
-			return binarySearch(arr, l, mid - 1, x, n);
+        // If element is smaller than mid, then
+        // it can only be present in left subarray
+        if (arr[mid] > x)
+            return binarySearch(arr, l, mid - 1, x, n);
 
-		// Else the element can only be present
-		// in right subarray
-		return binarySearch(arr, mid + 1, r, x, n);
-	}
+        // Else the element can only be present
+        // in right subarray
+        return binarySearch(arr, mid + 1, r, x, n);
+    }
 
-	// We reach here when element is not
-	// present in array
-	return -1;
+    // We reach here when element is not
+    // present in array
+    return -1;
 }
 
 int q6(int n, int amount, const int entry_fee[n])
@@ -364,13 +377,64 @@ int q6(int n, int amount, const int entry_fee[n])
     {
         fees[i] = entry_fee[i];
     }
-    
+
     int result = binarySearch(fees, 0, n - 1, amount, n);
     return result;
 }
 
+static void shifttable(const char *p, int t[])
+{
+    int i, j, m;
+    m = length(p);
+    for (i = 0; i < 200; i++)
+        t[i] = m;
+    for (j = 0; j < m - 1; j++)
+        t[p[j]] = m - 1 - j;
+    // for(int i = 0; i< 6; i++ )
+    // printf("%d\t", t[i]);
+}
+
+static int horspool(const char src[], const char *p, int t[], int len)
+{
+    int i, j, k, m, n;
+    n = length(src);
+    m = length(p);
+    // printf("\nLength of text=%d",n);
+    // printf("\n Length of pattern=%d",m);
+    i = m - 1;
+    while (i < n)
+    {
+        k = 0;
+        while ((k < m) && (p[m - 1 - k] == src[i - k]))
+            k++;
+        if (k == m)
+            return (i - m + 1);
+        else
+            i += t[src[i]];
+    }
+    return -1;
+}
+
 void q7(int n, const char *pat, int contains[n], const airport_t airports[n])
 {
+    int *t = (int *)malloc(200 * sizeof(int));
+    
+    for (int i = 0; i < 200; i++)
+    {
+        t[i] = 0;
+    }
+    // printf("Pattern: %s\n", pat);
+    for (int i = 0; i < n; i++)
+    {
+        shifttable(pat, t);
+        if (horspool(airports[i].airport_name, pat, t, n) != -1)
+        {
+            contains[i] = 1;
+        }
+        // printf("%d\t", t[i]);
+    }
+
+    // printf("\n");
 }
 
 int q8(int n, int trip_order[n - 1], const connection_t connections[n][n])
