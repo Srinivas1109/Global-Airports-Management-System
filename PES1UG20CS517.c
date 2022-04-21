@@ -1,14 +1,23 @@
 #include "header.h"
 #include <limits.h>
-#include <stdio.h>
+#include <stdio.h> // To be removed later
 #include <stdlib.h>
-#include <string.h>
 
 // ANY STATIC FUNCTIONS ARE UP HERE
 
 // YOUR SOLUTIONS BELOW
 
 int q[20], visited[20], f = -1, r = -1;
+
+static int length(char *str){
+    int len = 0;
+    while(*str){
+        len++;
+        str++;
+    }
+
+    return len;
+}
 
 static void bfs(int v, int n, const connection_t a[n][n])
 {
@@ -258,14 +267,8 @@ void q4(int n, int (*predicate_func)(const airport_t *, const airport_t *),
         airport_t airport_list[n])
 {
 
-    // printf("Unsorted Array\n");
-    // printArray(n, airport_list);
-
     // perform quicksort on data
     quickSort( n, airport_list, 0, n-1, predicate_func);
-
-    // printf("Sorted array in ascending order: \n");
-    // printArray(n, airport_list);
     
 }
 
@@ -274,7 +277,7 @@ void commonPrefixUtil(char *str1, char *str2, int id1, int id2, int *prev_len, p
 {
 	char *result = (char*)malloc(sizeof(char)*50);
     int  k = 0;
-	int n1 = strlen(str1), n2 = strlen(str2);
+	int n1 = length(str1), n2 = length(str2);
 	//printf("n1 %d, n2 %d\n", n1, n2);
 
 	// Compare str1 and str2
@@ -316,13 +319,54 @@ pair_t q5(int n, airport_t airports[n])
 			strcpy(str2, airports[j].airport_name);
             commonPrefixUtil(str1, str2, airports[i].num_id, airports[j].num_id, &prev, &result);
 		}
-	printf("longest prefix is at postions {%d, %d}\n", result.first, result.second);
+	// printf("longest prefix is at postions {%d, %d}\n", result.first, result.second);
     return result;
+}
+
+
+// For question 6
+static int binarySearch(int arr[], int l, int r, int x, int n)
+{
+	if (r >= l) {
+		int mid = l + (r - l) / 2;
+
+		// If the element is present at the middle
+		// itself
+        
+        // printf("mid-1\tx\tmid\n");
+        // printf("%d\t%d\t%d\n", arr[mid-1], x, arr[mid]);
+		if (arr[mid] == x)
+			return mid+1;
+        else if ((arr[mid-1] < x) && (x < arr[mid]))
+            return mid;
+        else if(mid == n-1)
+            return mid+1;
+
+		// If element is smaller than mid, then
+		// it can only be present in left subarray
+		if (arr[mid] > x)
+			return binarySearch(arr, l, mid - 1, x, n);
+
+		// Else the element can only be present
+		// in right subarray
+		return binarySearch(arr, mid + 1, r, x, n);
+	}
+
+	// We reach here when element is not
+	// present in array
+	return -1;
 }
 
 int q6(int n, int amount, const int entry_fee[n])
 {
-    return 0;
+    int fees[n];
+    for (int i = 0; i < n; i++)
+    {
+        fees[i] = entry_fee[i];
+    }
+    
+    int result = binarySearch(fees, 0, n - 1, amount, n);
+    return result;
 }
 
 void q7(int n, const char *pat, int contains[n], const airport_t airports[n])
