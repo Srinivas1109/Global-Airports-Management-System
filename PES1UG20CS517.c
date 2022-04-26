@@ -81,7 +81,7 @@ static int bfs(int n, const connection_t a[n][n])
     // int size = 400;
     q.size = 400;
 
-    q.arr = (int*)malloc(q.size * sizeof(int));
+    q.arr = (int *)malloc(q.size * sizeof(int));
     // int *arr = (int*)malloc(size * sizeof(int));
     // int arr[size];
     // int f = 0, r = 0;
@@ -489,10 +489,68 @@ int q9(int n, pair_t edges[n - 1], const connection_t connections[n][n])
     return 0;
 }
 
+static void Dijkstra(int n, const connection_t connections[n][n], int start, const int dest[], int costs[], int k)
+{
+    int cost[n][n], distance[n], pred[n];
+    int visited[n], count, mindistance, nextnode, i, j;
+
+    // Creating cost matrix
+    for (i = 0; i < n; i++)
+        for (j = 0; j < n; j++)
+            if (connections[i][j].time == 0)
+                cost[i][j] = INT_MAX;
+            else
+                cost[i][j] = connections[i][j].time;
+
+    for (i = 0; i < n; i++)
+    {
+        distance[i] = cost[start][i];
+        pred[i] = start;
+        visited[i] = 0;
+    }
+
+    distance[start] = 0;
+    visited[start] = 1;
+    count = 1;
+
+    while (count < n - 1)
+    {
+        mindistance = INT_MAX;
+
+        for (i = 0; i < n; i++)
+            if (distance[i] < mindistance && !visited[i])
+            {
+                mindistance = distance[i];
+                nextnode = i;
+            }
+
+        visited[nextnode] = 1;
+        for (i = 0; i < n; i++)
+            if (!visited[i])
+                if (mindistance + cost[nextnode][i] < distance[i])
+                {
+                    distance[i] = mindistance + cost[nextnode][i];
+                    pred[i] = nextnode;
+                }
+        count++;
+    }
+
+    // Printing the distance
+
+    for (int i = 0; i < k; i++)
+    {
+        costs[i] = distance[dest[i]];
+    }
+
+}
+
 void q10(int n, int k, const airport_t *src,
          const connection_t connections[n][n], const int destinations[k],
          int costs[k])
 {
+    // Dijkstra(n, connections, 3, destinations, costs, k);
+    Dijkstra(n, connections, src->num_id, destinations, costs, k);
+    // printf("src : %d\n",);
 }
 
 // END

@@ -361,7 +361,7 @@ else
     int destinations[] = {0, 2};
     int costs[2] = {INT_MAX, INT_MAX};
 
-    airport_t src = {0, "BLR"};
+    airport_t src = {3, "BLR"};
     q10(n, k, &src, q10_t1_connections, destinations, costs);
 
     if (costs[0] == 3 && costs[1] == 6)
