@@ -479,10 +479,231 @@ void q7(int n, const char *pat, int contains[n], const airport_t airports[n])
     // printf("\n");
 }
 
+// question 8
+typedef struct stack
+{
+    int arr[400];
+    int top;
+}stack_t;
+
+static void init(stack_t* s)
+{
+    s->top=-1;
+}
+
+static int full(stack_t* s)
+{
+    return s->top==400-1;
+}
+
+static void push(stack_t* s,int ele)
+{
+    if(!full(s))
+    {
+        s->top=s->top+1;
+        s->arr[s->top]=ele;
+    }
+}
+
+static int pop(stack_t* s)
+{
+    
+    return s->arr[s->top--];
+}
+
+static int top(stack_t* s)
+{
+    
+    return s->arr[s->top];
+}
+
+static void insert(int cycles[25][25],int v,int* cycle_no)
+{
+    int i=*cycle_no;
+    int index=-1;
+    for(int j=0;j<25 && index == -1;j++)
+    {
+        if(cycles[i][j]==-1)
+        {
+            index=j;
+        }
+    }
+    cycles[i][index]=v;
+}
+static void cycle(stack_t* s,int v,int cycles[25][25],int* cycle_no)
+{
+    stack_t s2;
+    init(&s2);
+    push(&s2,top(s));
+    pop(s);
+    while(top(&s2)!=v)
+    {
+        push(&s2,top(s));
+        pop(s);
+    }
+    while(s2.top!=-1)
+    {
+        insert(cycles,top(&s2),cycle_no);
+        push(s,top(&s2));
+        pop(&s2);
+    }
+}
+static void DFS_tree(int n,const connection_t connections[n][n],stack_t* s,int visited[n],int cycles[25][25],int* cycle_no)
+{
+    int u=top(s);
+    for(int i=0;i<n;i++)
+    {
+        if(connections[u][i].distance!=0 && connections[u][i].distance!=INT_MAX &&visited[i]==0)
+        {
+            *cycle_no=*cycle_no+1;
+            cycle(s,i,cycles,cycle_no);
+        }
+        else if(connections[u][i].distance!=0 && connections[u][i].distance!=INT_MAX &&visited[i]==-1)
+        {
+            push(s,i);
+            visited[i]=0;
+            DFS_tree(n,connections,s,visited,cycles,cycle_no);
+        }
+    }
+    visited[top(s)]=1;
+    pop(s);
+}
+static void find_cycles(int n,const connection_t connections[n][n],int visited[n],int cycles[25][25],int* cycle_no)
+{
+    for(int i=0;i<n;i++)
+    {
+        if(visited[i]==-1)
+        {
+            stack_t s;
+            init(&s);
+            push(&s,i);
+            visited[i]=0;
+            DFS_tree(n,connections,&s,visited,cycles,cycle_no);
+            // for(int j=i+1;j<n;j++)
+            // {
+            //     visited[j]=-1;
+            // }
+        }
+    }
+}
+
+
+
 int q8(int n, int trip_order[n - 1], const connection_t connections[n][n])
 {
-    return 0;
+    int visited[n];
+    int cycles[25][25];
+    int cycle_no = 0;
+    int min_index;
+    int min = INT_MAX;
+    int cost=0;
+    int p,q;
+    for(int i=0;i<n;i++)
+    {
+        visited[i]=-1;
+    }
+    for(int a=0;a<25;a++)
+    {
+        for(int b=0;b<25;b++)
+        {
+            cycles[a][b]=-1;
+        }
+    }
+    find_cycles(n,connections,visited,cycles,&cycle_no);
+    int count[cycle_no+1];
+    for(int i=0;i<cycle_no+1;i++)
+    {
+        count[i]=0;
+    }
+    int res[cycle_no+1][n];
+    int x=0;
+    int y=0;
+    for(int a=0;a<cycle_no+1;a++)
+    {
+        for(int b=0;b<n;b++)
+        {
+            res[a][b]=-1;
+        }
+    }
+    for(int a=0;a<25;a++)
+    {
+        y=0;
+        int flag=0;
+        for(int b=0;b<25;b++)
+        {
+            if(cycles[a][b]!=-1)
+            {
+                if(!flag)
+                {
+                    x++;
+                    flag=1;
+                }
+                res[x][y]=cycles[a][b];
+                count[x]=count[x]+1;
+                // printf("%d %d %d %d %d\t\t\t",cycles[a][b],res[x][y],x,y,count[x]);
+                y++;
+            }
+        }
+        // x++;
+        // printf("\n");
+    }
+    /* for(int a=1;a<cycle_no+1;a++)
+    {
+        for(int b=0;b<n;b++)
+        {
+            printf("%d\t",res[a][b]);
+        }
+        printf("\n");
+    } */
+    /* for(int i=0;i<cycle_no+1;i++)
+    {
+        // printf("%d\t",count[i]);
+    } */
+    for(int a=1;a<cycle_no+1;a++)
+    {
+        if(count[a]==n-1)
+        {
+            cost=0;
+            // last_index=n-1;
+            for(int b=0;b<n-1;b++)
+            {
+                if(res[a][b]!=-1 && res[a][b+1]!=-1)
+                {
+                    p=res[a][b];
+                    q= res[a][b+1];
+                    cost+= connections[p][q].distance;
+                    // printf(" c : %d\t",cost);
+                }
+            }
+            cost+=connections[q][res[a][0]].distance;
+            if(cost<min)
+            {
+                min=cost;
+                min_index=a;
+            }
+        }
+    }
+    if(min==INT_MAX)
+    {
+        return -1;
+    }
+    else
+    {
+        // printf("\n\n%d",min);
+        for(int i=0;i<n-1;i++)
+        {
+            trip_order[i]=cycles[min_index][i];
+        }
+        return min;
+    }
+
+
 }
+
+/* int q8(int n, int trip_order[n - 1], const connection_t connections[n][n])
+{
+    return 0;
+} */
 
 // 9th question
 typedef struct edge {
@@ -499,11 +720,11 @@ edge_list elist;
 // int Graph[MAX][MAX], n;
 edge_list spanlist;
 
-int find(int belongs[], int vertexno) {
+static int find(int belongs[], int vertexno) {
   return (belongs[vertexno]);
 }
 
-void applyUnion(int n, int belongs[], int c1, int c2) {
+static void applyUnion(int n, int belongs[], int c1, int c2) {
   int i;
 
   for (i = 0; i < n; i++)
@@ -511,7 +732,7 @@ void applyUnion(int n, int belongs[], int c1, int c2) {
       belongs[i] = c1;
 }
 
-void sort() {
+static void sort() {
   int i, j;
   edge temp;
 
@@ -524,7 +745,7 @@ void sort() {
       }
 }
 
-int print(pair_t edges[]) {
+static int print(pair_t edges[]) {
   int i, cost = 0;
 
   for (i = 0; i < spanlist.n; i++) {
@@ -544,7 +765,7 @@ void sort();
 void print(); */
 
 // Applying Krushkal Algo
-void kruskalAlgo(int n, const connection_t connections[n][n]) {
+static void kruskalAlgo(int n, const connection_t connections[n][n]) {
   int belongs[400], i, j, cno1, cno2;
   elist.n = 0;
 
