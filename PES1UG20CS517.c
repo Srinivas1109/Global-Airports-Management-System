@@ -7,8 +7,6 @@
 
 // YOUR SOLUTIONS BELOW
 
-int q[20], visited[20], f = -1, r = -1;
-
 static int length(const char *str)
 {
     int len = 0;
@@ -19,55 +17,6 @@ static int length(const char *str)
     }
 
     return len;
-}
-
-void mystrcpy(char str2[30], char str1[30])
-{
-    int i;
-    for (i = 0; str1[i] != '\0'; i++)
-    {
-        str2[i] = str1[i];
-    }
-    str2[i] = '\0';
-}
-
-static void bfs(int v, int n, const connection_t a[n][n])
-{
-    int i;
-    for (i = 0; i < n; i++) // check all the vertices in the graph
-    {
-        if ((a[v][i].distance != INT_MAX && a[v][i].time != INT_MAX) && visited[i] == 0) // adjacent to v and not visited
-        {
-            r = r + 1;
-            q[r] = i;       // insert them into queue
-            visited[i] = 1; // mark the vertex visited
-            // printf("%d\t", i);
-        }
-    }
-    f = f + 1;           // remove the vertex at front of the queue
-    if (f <= r)          // as long as there are elements in the queue
-        bfs(q[f], n, a); // peform bfs again on the vertex at front of the queue
-}
-
-int q1(int n, const connection_t connections[n][n])
-{
-    for (int i = 0; i < n; i++)
-    {
-        for (int j = 0; j < n; j++) // mark all the vertices as not visited
-        {
-            visited[j] = 0;
-        }
-        f = r = 0;
-        q[r] = i;
-        // printf("BFS traversal for starting vertex %d is:\n", i);
-        visited[i] = 1; // mark the starting vertex as visited
-        // printf("%d\t", i);
-        bfs(i, n, connections);
-        // printf("\n");
-        if (r != n - 1)
-            return 0;
-    }
-    return 1;
 }
 
 struct queue
@@ -104,8 +53,8 @@ static int enqueue(struct queue *q, int val)
     }
     else
     {
-        q->r++;
         q->arr[q->r] = val;
+        q->r++;
         // printf("Enqued element: %d\n", val);
     }
     return 0;
@@ -120,10 +69,78 @@ static int dequeue(struct queue *q)
     }
     else
     {
-        q->f++;
         a = q->arr[q->f];
+        q->f++;
     }
     return a;
+}
+
+static int bfs(int n, const connection_t a[n][n])
+{
+    struct queue q;
+    // int size = 400;
+    q.size = 400;
+
+    q.arr = (int*)malloc(q.size * sizeof(int));
+    // int *arr = (int*)malloc(size * sizeof(int));
+    // int arr[size];
+    // int f = 0, r = 0;
+
+    int visited[q.size];
+
+    // visited[] = 1;
+
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < n; j++) // mark all the vertices as not visited
+        {
+            visited[j] = 0;
+        }
+        q.f = 0;
+        q.r = 0;
+        // f = 0;
+        // r = 0;
+        // printf("%d\t", i);
+        visited[i] = 1; // mark the starting vertex as visited
+        enqueue(&q, i);
+        // r++;
+        // arr[r] = i;
+
+        // qinsert(&r, &f, i, q.arr);
+
+        while (!isEmpty(&q))
+        {
+            int node = dequeue(&q);
+            // int node = arr[f];
+            // printf("In loop\n");
+            // int node = qdelete(&r, &f, arr);
+            // f++;
+            // printf("Deleted: %d\n", node);
+            for (int j = 0; j < n; j++)
+            {
+                if ((a[node][j].distance != INT_MAX && a[node][j].distance != 0) && visited[j] == 0)
+                {
+                    // printf("%d\t", j);
+                    visited[j] = 1;
+                    enqueue(&q, j);
+                    // r++;
+                    // arr[r] = i;
+                    // qinsert(&r, &f, j, arr);
+                }
+            }
+        }
+    }
+    // q.r == n condition
+    free(q.arr);
+    // printf("\n");
+    if (q.r == n)
+        return 1;
+    return 0;
+}
+
+int q1(int n, const connection_t connections[n][n])
+{
+    return bfs(n, connections);
 }
 
 static int bfs_Q2(int v, int src, int dest, int n, const connection_t a[n][n])
@@ -188,20 +205,45 @@ int q2(const airport_t *src, const airport_t *dest, int n, int k,
     return 0;
 }
 
+static int findpath(int s, int d, int n, int *visit, const connection_t connections[n][n])
+{
+    int u;
+    visit[s] = 1;
+
+    for (u = 0; u < n; u++)
+    {
+        if ((connections[s][u].distance != INT_MAX) && (visit[u] == 0))
+        {
+            if ((u == d) || findpath(u, d, n, visit, connections))
+                return 1;
+        }
+    }
+    return 0;
+}
+
+static int path(int src, int dest, int n, const connection_t connections[n][n])
+{
+    int visited[n];
+    int i;
+
+    for (i = 0; i < n; i++)
+        visited[i] = 0;
+    return findpath(src, dest, n, visited, connections);
+}
+
 int q3(const airport_t *src, int n, const connection_t connections[n][n])
 {
-    int home = 0;
+    int flag = 1;
     for (int i = 0; i < n; i++)
     {
-        if (src->num_id != i)
-            if (connections[src->num_id][i].distance != INT_MAX)
-                if (connections[i][src->num_id].distance != INT_MAX)
-                    home = home + 1;
+        if (i != src->num_id)
+        {
+            if (path(src->num_id, i, n, connections))
+                if (!path(i, src->num_id, n, connections))
+                    flag = 0;
+        }
     }
-    if (home != 0)
-        return 1;
-    else
-        return 0;
+    return flag;
 }
 
 // For Question 4
@@ -418,7 +460,7 @@ static int horspool(const char src[], const char *p, int t[], int len)
 void q7(int n, const char *pat, int contains[n], const airport_t airports[n])
 {
     int *t = (int *)malloc(200 * sizeof(int));
-    
+
     for (int i = 0; i < 200; i++)
     {
         t[i] = 0;
