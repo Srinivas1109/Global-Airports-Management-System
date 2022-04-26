@@ -484,9 +484,115 @@ int q8(int n, int trip_order[n - 1], const connection_t connections[n][n])
     return 0;
 }
 
+// 9th question
+typedef struct edge {
+  int u, v, w;
+} edge;
+
+typedef struct edge_list {
+  edge data[400];
+  int n;
+} edge_list;
+
+edge_list elist;
+
+// int Graph[MAX][MAX], n;
+edge_list spanlist;
+
+int find(int belongs[], int vertexno) {
+  return (belongs[vertexno]);
+}
+
+void applyUnion(int n, int belongs[], int c1, int c2) {
+  int i;
+
+  for (i = 0; i < n; i++)
+    if (belongs[i] == c2)
+      belongs[i] = c1;
+}
+
+void sort() {
+  int i, j;
+  edge temp;
+
+  for (i = 1; i < elist.n; i++)
+    for (j = 0; j < elist.n - 1; j++)
+      if (elist.data[j].w > elist.data[j + 1].w) {
+        temp = elist.data[j];
+        elist.data[j] = elist.data[j + 1];
+        elist.data[j + 1] = temp;
+      }
+}
+
+int print(pair_t edges[]) {
+  int i, cost = 0;
+
+  for (i = 0; i < spanlist.n; i++) {
+    // printf("\n%d - %d : %d", spanlist.data[i].u, spanlist.data[i].v, spanlist.data[i].w);
+    edges[i].first = spanlist.data[i].v;
+    edges[i].second = spanlist.data[i].u;
+    cost = cost + spanlist.data[i].w;
+  }
+
+//   printf("\nSpanning tree cost: %d\n", cost);
+  return cost;
+}
+/* void kruskalAlgo();
+int find(int belongs[], int vertexno);
+void applyUnion(int belongs[], int c1, int c2);
+void sort();
+void print(); */
+
+// Applying Krushkal Algo
+void kruskalAlgo(int n, const connection_t connections[n][n]) {
+  int belongs[400], i, j, cno1, cno2;
+  elist.n = 0;
+
+  for (i = 1; i < n; i++)
+    for (j = 0; j < i; j++) {
+      if (connections[i][j].time != 0) {
+        elist.data[elist.n].u = i;
+        elist.data[elist.n].v = j;
+        elist.data[elist.n].w = connections[i][j].time;
+        elist.n++;
+      }
+    }
+
+  sort();
+
+  for (i = 0; i < n; i++)
+    belongs[i] = i;
+
+  spanlist.n = 0;
+
+  for (i = 0; i < elist.n; i++) {
+    cno1 = find(belongs, elist.data[i].u);
+    cno2 = find(belongs, elist.data[i].v);
+
+    if (cno1 != cno2) {
+      spanlist.data[spanlist.n] = elist.data[i];
+      spanlist.n = spanlist.n + 1;
+      applyUnion(n, belongs, cno1, cno2);
+    }
+  }
+}
+
+
+// Sorting algo
+
+// Printing the result
+
 int q9(int n, pair_t edges[n - 1], const connection_t connections[n][n])
 {
-    return 0;
+    kruskalAlgo(n, connections);
+    int res = 0;
+    res = print(edges);
+    /* for (int i = 0; i < n-1; i++)
+    {
+        printf("(%d, %d)\n", edges[i].first, edges[i].second);
+    } */
+    
+    return res;
 }
 
 static void Dijkstra(int n, const connection_t connections[n][n], int start, const int dest[], int costs[], int k)
